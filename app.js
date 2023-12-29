@@ -1,5 +1,6 @@
 // importations
 const express = require("express");
+require("express-async-errors");
 const app = express();
 const cors = require("cors");
 const morgan = require("morgan");
@@ -21,6 +22,7 @@ app.use("/api/blogs", blogsRouter);
 mongoose.set("strictQuery", false);
 const mongoUrl = config.MONGODB_URI;
 logger.info("connecting to", mongoUrl);
+
 mongoose
   .connect(mongoUrl)
   .then(() => logger.info("Connected to MongoDB"))

@@ -88,6 +88,21 @@ describe("likes property", () => {
   });
 });
 
+describe("delete request", () => {
+  test("deletes the targeted blog and returned 204 status", async () => {
+    await api.delete("/api/blogs/6588506fce0013ac4614dc97").expect(204);
+  });
+});
+
+describe("update request", () => {
+  test("updates the targeted blog", async () => {
+    await api
+      .put("/api/blogs/658dbe8597b3a901c478df42")
+      .send({ likes: 10 })
+      .expect("Content-Type", /application\/json/);
+  });
+});
+
 afterAll(async () => {
   await mongoose.connection.close();
 });
