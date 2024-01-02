@@ -1,8 +1,18 @@
 const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app");
+const Blog = require("../models/blog");
+const helper = require("./test_helper");
 
 const api = supertest(app);
+
+beforeEach(async () => {
+  await Blog.deleteMany({});
+
+  const blogObjects = helper.initialBlogs.map((blog) => new Blog(blog));
+  const promiseArray = blogObjects.map((blog) => blog.save());
+  await Promise.all(promiseArray);
+}, 100000);
 
 describe("blogs as json", () => {
   test("returns blogs as json", async () => {
@@ -31,16 +41,27 @@ describe("post request", () => {
     // get the initial blogs length
     const initialBlogsLength = initialBlogs.body.length;
 
+    const user = {
+      username: "root",
+      password: "sekret",
+    };
+
+    // log the root user
+    const loginUser = await api.post("/api/login").send(user);
+
     // create the new note
     const newBlog = {
-      title: "The path of spiritual enlightment",
+      title: "I am a new creation",
       author: "Moise Kongolo",
       url: "www.google.com",
+      likes: 4,
+      userId: "659342d6b6e7a413af9df424",
     };
 
     // save the new note the db
     await api
       .post("/api/blogs")
+      .set("Authorization", `Bearer ${loginUser.body.token}`)
       .send(newBlog)
       .expect(201)
       .expect("Content-Type", /application\/json/);
@@ -52,23 +73,61 @@ describe("post request", () => {
     // test if the blogs length is increaseb by 1
     expect(response.body).toHaveLength(initialBlogsLength + 1);
     // check if blogs contain the last blog saved
-    expect(contents).toContain("The path of spiritual enlightment");
+    expect(contents).toContain("I am a new creation");
+  });
+
+  test("fails to create a new blog for unauthorized user", async () => {
+    // create the new note
+    const newBlog = {
+      title: "new creation",
+      author: "Moise Kongolo",
+      url: "www.google.com",
+      likes: 4,
+      userId: "659342d6b6e7a413af9df424",
+    };
+
+    // save the new note the db
+    await api
+      .post("/api/blogs")
+      .send(newBlog)
+      .expect(401)
+      .expect("Content-Type", /application\/json/);
   });
 });
 
 describe("post /api/blogs", () => {
   test("returns status 400 if url or title property missing", async () => {
+    const user = {
+      username: "root",
+      password: "sekret",
+    };
+
+    // log the root user
+    const loginUser = await api.post("/api/login").send(user);
+
     const newBlog = {
       author: "Moise Kongolo",
       likes: 23,
     };
 
-    await api.post("/api/blogs").send(newBlog).expect(400);
+    await api
+      .post("/api/blogs")
+      .set("Authorization", `Bearer ${loginUser.body.token} `)
+      .send(newBlog)
+      .expect(400);
   });
 });
 
 describe("likes property", () => {
   test("defaults likes property to 0 if missing from request", async () => {
+    const user = {
+      username: "root",
+      password: "sekret",
+    };
+
+    // log the root user
+    const loginUser = await api.post("/api/login").send(user);
+
     let newBlog = {
       title: "How to walk in light in 2024",
       author: "Moise Kongolo",
@@ -77,6 +136,7 @@ describe("likes property", () => {
 
     await api
       .post("/api/blogs")
+      .set("Authorization", `Bearer ${loginUser.body.token}`)
       .send(newBlog)
       .expect(201)
       .expect("Content-Type", /application\/json/);
@@ -90,14 +150,39 @@ describe("likes property", () => {
 
 describe("delete request", () => {
   test("deletes the targeted blog and returned 204 status", async () => {
-    await api.delete("/api/blogs/6588506fce0013ac4614dc97").expect(204);
-  });
+    // make sure there is something in the db created by root before running the test
+    const user = {
+      username: "root",
+      password: "sekret",
+    };
+
+    // log the root user
+    const loginUser = await api.post("/api/login").send(user);
+    const blogs = await api.get("/api/blogs");
+    const blogId = blogs.body[0].id;
+
+    await api
+      .delete(`/api/blogs/${blogId}`)
+      .expect(204)
+      .set("Authorization", `Bearer ${loginUser.body.token}`);
+  }, 3000);
 });
 
 describe("update request", () => {
   test("updates the targeted blog", async () => {
+    const user = {
+      username: "root",
+      password: "sekret",
+    };
+
+    // log the root user
+    const loginUser = await api.post("/api/login").send(user);
+    const blogs = await api.get("/api/blogs");
+    const blogId = blogs.body[0].id;
+
     await api
-      .put("/api/blogs/658dbe8597b3a901c478df42")
+      .put(`/api/blogs/${blogId}`)
+      .set("Authorization", `Bearer ${loginUser.body.token}`)
       .send({ likes: 10 })
       .expect("Content-Type", /application\/json/);
   });

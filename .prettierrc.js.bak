@@ -1,0 +1,6 @@
+const config =  {
+    indentStyle : tabs,
+    tabWidth : 2
+};
+
+module.exports = config;

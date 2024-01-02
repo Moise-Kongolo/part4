@@ -1,15 +1,43 @@
 POST http://localhost:3003/api/blogs HTTP/1.1
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJpZCI6IjY1OTI5YTU2ZWQ4YTY4NWRiYmM4ZTQwZCIsImlhdCI6MTcwNDE0NTE4M30.yGqeDv4F-xEl6_CPGrozfssqYgkeMeqp4vDszdBZ7vw
 
 {
-    "author": "Moise Kongolo",
-    "likes": "23"
+    "title": "The life of a sysadmin",
+    "author": "moses",
+    "url": "www.google.com",
+    "likes": "100",
+    "userId": "65929a56ed8a685dbbc8e40d" 
+}
+
+###
+
+POST http://localhost:3003/api/users HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "ryota",
+  "name": "ryota kise",
+  "password": "ryota"
+}
+
+###
+
+POST http://localhost:3003/api/login
+Content-Type: application/json
+
+{
+  "username": "root",
+  "password": "sekret"
 }
 
 ###
 
 GET http://localhost:3003/api/blogs
 
+###
+
+GET http://localhost:3003/api/users
 
 ###
 
@@ -17,7 +45,8 @@ GET http://localhost:3003/api/blogs/658ded19aaa99935558e896a
 
 ###
 
-DELETE http://localhost:3003/api/blogs/658ded657a772100b624df12
+DELETE http://localhost:3003/api/blogs/6593d9e3a9977a8a56c24c19
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJpZCI6IjY1OTNjZjU4ZmY2MDliZDg3OWU4MzkxNCIsImlhdCI6MTcwNDE4ODQ2NX0.ocuMJKLiK13jrUC4eFsDjBFyht2McQ0-whEMFmaaUYU
 
 
 
